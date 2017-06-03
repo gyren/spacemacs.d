@@ -1,0 +1,98 @@
+#+TITLE: xx layer
+#+HTML_HEAD_EXTRA: <link rel="stylesheet" type="text/css" href="../css/readtheorg.css" />
+
+#+CAPTION: logo
+
+# The maximum height of the logo should be 200 pixels.
+[[img/xx.png]]
+
+* Table of Contents                                        :TOC_4_org:noexport:
+ - [[Install][Install]]
+ - [[Description][Description]]
+   - [[根据屏幕分辨率调整字体大小][根据屏幕分辨率调整字体大小]]
+   - [[sdcv][sdcv]]
+   - [[=chinese= layer][=chinese= layer]]
+     - [[youdao-dictionary][youdao-dictionary]]
+   - [[chinese calendar][chinese calendar]]
+     - [[设置节假日][设置节假日]]
+       - [[holiday-chinese VS holiday-lunar][holiday-chinese VS holiday-lunar]]
+ - [[Key bindings][Key bindings]]
+
+* Install
+To use this contribution add it to your =~/.spacemacs=
+
+#+begin_src emacs-lisp
+  (setq-default dotspacemacs-configuration-layers '(xx))
+#+end_src
+
+* Description
+=spacemacs= 定义的许多 layers 中默认的设置与自己的使用习惯之间的偏差需要调整。
+同时，还有一些功能上的缺失需要补充。这些内容都通过 =xx= 这个 layer 来完善。
+** 根据屏幕分辨率调整字体大小
+
+** sdcv
+[[http://www.huzheng.org/stardict/][星际译王]] 有一个命令行工具 =sdcv= ，Gentoo 中可安装：
+#+HEADER: :tangle no
+#+BEGIN_SRC sh
+  emerge app-text/sdcv
+#+END_SRC
+
+[[pluskid][有人]]写了个[[http://code.google.com/p/sdcv-mode/][小工具]] 供 Emacs 使用，sdcv 可查询目录 =~/.stardict/dic/= 下存在的字典
+文件。因为 sdcv-mode.el 没有 =;;;###= 这样的 =magic comments= ，所以在
+=use-package= 里面需要使用 =:commands= 关键字。
+#+BEGIN_SRC emacs-lisp
+  (use-package sdcv-mode
+    :defer t
+    :commands (sdcv-search)
+    :config
+    (spacemacs/set-leader-keys "os" 'sdcv-search))
+#+END_SRC
+
+** =chinese= layer
+*** youdao-dictionary
+在安装了 chinese layer 且激活了有道词典的情况下，给其绑定快捷键。
+#+BEGIN_SRC emacs-lisp
+(when (and (configuration-layer/layer-usedp 'chinese)
+           (configuration-layer/package-usedp 'youdao-dictionary)
+           chinese-enable-youdao-dict)
+  (defun xx/post-init-youdao-dictionary ()
+    (spacemacs/set-leader-keys "oy" 'youdao-dictionary-search)))
+#+END_SRC
+** chinese calendar
+=Emacs= 的 =calendar= 包已经提供了部分的中国历法、农历（月历）的功能，此外，还有
+第三方开发的 [[https://github.com/xwl/cal-china-x][cal-china-x]] 对中国历法进行扩展。
+
+=cal-china-x= 主要扩展的功能包括：
+- 中文本地化；
+- 在 mode line 显示节假日（holiday）、星座（horoscope）、生肖（zodiac）、节气
+  （solar term）等信息；
+- 定义了新的函数 =holiday-lunar= 和 =holiday-solar-term= 设置节假日；
+- 高亮不同优先级的节假日；
+- 新增了 2 组预定义的节假日： =cal-china-x-chinese-holidays= 和
+  =cal-china-x-japanese-holidays= ；
+- custom week diary(like weeks in school)
+*** 设置节假日
+哪一天会被 =calendar= 作为节假日（holiday）对待取决于这一天是否在
+=calendar-holidays= 变量中。 =calendar= 预设了许多不同历法中的节假日，如：
+=holiday-christian-holidays= =holiday-hebrew-holidays=
+=holiday-oriental-holidays= 等，对中国历法来说，大部分无意义。因此，基本上可以自
+己完全重设 =calendar-holidays= 变量。有这样几种设置节假日的方式：
+- (holiday-fixed MONTH DAY STRING) :: 设定具体的公历日，如：(holiday-fixed 1 1 "
+     元旦") 设定公历 1 月 1 日为元旦；
+- (holiday-fixed MONTH DAYNAME K STRING &optional DAY) ::
+
+**** holiday-chinese VS holiday-lunar 
+=holiday-chinese= 函数在 =cal-china= 中定义，可按照农历来定义节假日。
+=holiday-lunar= 函数在 =cal-china-x= 中定义，同样用来按农历日期来定义节假日。两
+者的区别在于， =holiday-lunar= 考虑到了农历大小月的情况。比如，我的生日是农历 4
+月 30 日，2016 年农历 4 月正好是小月，没有 30 日。按中国习惯，生日就在农历 4 月
+29 日。 =(holiday-lunar 4 30)= 可以得到符合中国习惯的日期， =(holiday-chinese 4
+30)= 返回的则是农历的 5 月 1 日。 =还是中国人做的懂中国^_^=
+
+* Key bindings
+
+| Key Binding | Description              |
+|-------------+--------------------------|
+| ~<SPC> o s~ | sdcv-search              |
+| ~<SPC> o y~ | youdao-dictionary-search |
+|             |                          |

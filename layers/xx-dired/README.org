@@ -1,0 +1,46 @@
+#+TITLE: xx-dired layer
+#+HTML_HEAD_EXTRA: <link rel="stylesheet" type="text/css" href="../css/readtheorg.css" />
+
+#+CAPTION: logo
+
+# The maximum height of the logo should be 200 pixels.
+[[img/xx-dired.png]]
+
+* Table of Contents                                        :TOC_4_org:noexport:
+ - [[Install][Install]]
+ - [[Description][Description]]
+   - [[dired+][dired+]]
+   - [[dired-narrow][dired-narrow]]
+   - [[dired-rainbow ][dired-rainbow ]]
+ - [[Key bindings][Key bindings]]
+
+* Install
+To use this contribution add it to your =~/.spacemacs=
+
+#+begin_src emacs-lisp
+  (setq-default dotspacemacs-configuration-layers '(xx-dired))
+#+end_src
+
+* Description
+dired 是 Emacs 自带的包。在自带的包里面，对其功能进行扩展的有 =dired-x=
+=dired-aux= =wdired= =epa-dired= ，利用其功能的有 =find-dired= =image-dired= 。
+除此之外，ELPA 里也有些扩展 =dired-mode= 的包，这里要用到的有：
+- dired+ ::
+- dired-detail :: 在 ELPA 中，此包被 =dired-details+= 依赖，因此不需要显式地安装。
+- dired-details+ :: 
+
+** dired+
+
+** dired-narrow
+
+** dired-rainbow 
+这个包没有 autoload 的函数，也没有交互调用的函数，所以需要立即调用，或者在 dired 调
+用后立即调用，不能使用 =:defer t= 关键字。
+
+* Key bindings
+
+| Key Binding | Description              |
+|-------------+--------------------------|
+| ~<SPC> o s~ | sdcv-search              |
+| ~<SPC> o y~ | youdao-dictionary-search |
+|             |                          |

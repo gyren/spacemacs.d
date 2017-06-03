@@ -1,0 +1,292 @@
+#+TITLE: xx-email layer
+#+HTML_HEAD_EXTRA: <link rel="stylesheet" type="text/css" href="../css/readtheorg.css" />
+
+#+CAPTION: logo
+
+# The maximum height of the logo should be 200 pixels.
+[[img/xx-email.png]]
+
+* Table of Contents                                        :TOC_4_org:noexport:
+ - [[Install][Install]]
+ - [[MxA][MxA]]
+ - [[maildir][maildir]]
+ - [[Gnus][Gnus]]
+   - [[notifications][notifications]]
+   - [[Backend][Backend]]
+     - [[nnmaildir][nnmaildir]]
+ - [[mu4e][mu4e]]
+   - [[context][context]]
+ - [[notmuch][notmuch]]
+   - [[tags][tags]]
+     - [[Automatically retagging the database][Automatically retagging the database]]
+   - [[notmuch-emacs][notmuch-emacs]]
+   - [[兼容 webmail 的设置][兼容 webmail 的设置]]
+     - [[webmail 的一些特性（以 QQmail 为例）][webmail 的一些特性（以 QQmail 为例）]]
+ - [[offlineimap][offlineimap]]
+ - [[Send Mail][Send Mail]]
+   - [[emacs中关于发送邮件的设置][emacs中关于发送邮件的设置]]
+   - [[msmtp 配置文件][msmtp 配置文件]]
+   - [[msmtp 配置文件中的密码存放][msmtp 配置文件中的密码存放]]
+ - [[Key bindings][Key bindings]]
+ - [[Footnotes][Footnotes]]
+
+* Install
+To use this contribution add it to your =~/.spacemacs=
+
+#+begin_src emacs-lisp
+  (setq-default dotspacemacs-configuration-layers '(xx-email))
+#+end_src
+
+* MxA
+从终端用户的角度看电子邮件的使用，是一个很简单的过程。目前，用户大多通过两种方式
+使用电子邮件：
+1. webmail :: 通过浏览器访问各大邮件服务商提供的网页完成邮件的查看、处理、发送等
+     功能，如：[[http://mail.google.com][Gmail]] 、[[http://mail.qq.com][QQmail]] 等。以这种方式使用电子邮件极为简单，只需在邮件服务
+     商提供的注册页面注册，然后以注册成功的用户名（通常就是邮箱地址）和密码登录
+     邮箱服务器，就可以查看邮箱中已收到的邮件、撰写新邮件并提交发送等。
+2. 客户端 :: webmail 提供用于查看邮件、撰写邮件的页面本质上就是一个客户端，除此
+     之外还有一些不依赖浏览器实现类似功能的独立软件，如：[[https://www.mozilla.org/thunderbird/][Thunderbird]] 、[[http://www.foxmail.com/][Foxmail]]
+     等。
+
+进一步细分，电子邮件的接收、查看、发送等环节的背后都有另外的专业工具负责处理，客
+户端或者 webmail 的后台处理也不例外，只不过仅从收发电子邮件的这个目的而言，终端
+用户并不关心这些细节，因此这些邮件解决方案将大部分的细节隐藏了。
+
+电子邮件处理的过程可被大致分为 5 个逻辑环节[fn:1]：
+- MUA :: Mail User Agent。用户所看到的邮件客户端、webmail等就是 MUA，除此之外，
+     还有 [[http://www.mutt.org/][mutt]] 这个可在 term 中使用的著名的 MUA。Emacs 中略有接触的几种 =MUA= 如：
+     [[*Gnus][Gnus]] 、[[*mu4e][mu4e]] 、[[*notmuch][notmuch]]将在后文稍作说明。
+- MSA :: Mail Submission Agent
+- MTA :: Mail Transfer Agent。MTA 准备邮件，然后请求 MDA 传送邮件。注意是
+     =transfer= 而不是 =transport=
+- MDA :: Mail Delivery Agent
+- MRA :: Mail Retrieval Agent。MRA 通过 =IMAP= 或 =POP3= 协议连接远程服务器上的
+     邮箱并将邮件从服务器上取回到本地供 MUA 管理。如：[[http://www.fetchmail.info/][fetchmail]] 、[[*offlineimap][offlineimap]] 等。
+
+
+#+BEGIN_SRC plantuml :file ./img/email-mxa-workflow.png
+  skinparam packageStyle rect
+  actor Sender as "发件人" << Human >>
+  actor Recipient as "收件人" << Human >>
+  usecase MUAS as "MUA used by Sender
+  --
+  to manage mailbox (compose mails)
+  ..such as..
+  ,**GNUS**"
+
+  usecase MUAR as "MUA used by Recipient
+  --
+  to manage mailbox (read or spam mails)
+  ..such as..
+  ,**mutt** or **mu4e**"
+
+  usecase localMTA as "local MTA
+  --
+  queue and send mails passed by MUA
+  ..such as..
+  ,**sendmail**"
+
+  usecase ISPMSA as "ISP's MSA
+  --
+  validate mails passed by local MTA"
+
+  usecase MDA as "MDA"
+  usecase MRA as "MRA"
+
+  rectangle MTA {
+    Sender --> MUAS : Composed mail and\n press **SEND** button
+    MUAS -> localMTA : Mail sent
+    localMTA --> (MTA)
+    (MTA) --> ISPMSA
+    ISPMSA --> MDA
+    MDA --> MRA
+    MRA --> MUAR : Mail received
+    MUAR -> Recipient : Open **INBOX** and\n read the mail
+  }
+#+END_SRC
+
+#+BEGIN_SRC plantuml :file ./img/email-mxa-workflow.png
+|Sender|
+start
+:MUA used by Sender
+to manage mailbox (compose mails)
+such as **GNUS**;
+|MTA|
+:local MTA;
+:ISP's MSA;
+:MDA;
+:MRA;
+|Recipient|
+:MUA used by Recipient
+to manage mailbox (read or spam mails)
+such as **mutt** or **mu4e**;
+
+end
+#+END_SRC
+
+#+RESULTS:
+[[file:./img/email-mxa-workflow.png]]
+
+在可以随时接入网络的情况下，webmail 至少在响应新邮件时是最及时的。仅从及时性这个
+特点来看，不管采用哪种邮件处理方式，都有必要尽可能地兼容 webmail 。
+
+* maildir
+  :PROPERTIES:
+  :ATTACH_DIR: /home/xx/.spacemacs.d/layers/xx-email/img/
+  :END:
+相比 mbox 等格式， maildir 格式的每封邮件单独存储在文件名唯一的文件中。
+mailbox 通过一套命名规则来确保文件名的唯一性：
+不以 =.= 开头、不含 =/= 及 =:= ，由 3 个字段组成，各字段以 =.= 分开。
+
+比如，我本地 maildir 中的一封邮件在文件系统中的文件名是这样的：
+[[file:img/screenshot-20161211-132149.png]]
+
+其中， =1481426440_0.2579.TPx240= 即 maildir 格式所要求的唯一的文件名，以 =.= 分
+隔成 3 个字段，第一个字段是 offlineimap 处理该邮件的时间，第二个字段是
+offlineimap 的 PID，第三个字段是主机名。
+
+有个貌似冲突的地方 =:2,S= 里面有 =:= ，这个内容是邮件在 maildir 中的 =new= 文件
+夹向 =cur= 文件夹转移的过程中加入的，用于标示该封邮件的状态。以 =1,= 开头的表示
+实验性的语义，以 =2,= 开头的后续每个字符表示一种状态：
+- P :: passed, 指用户已经向其他人 *重发/转发/退回* （resent/forwarded/bounced）
+     了该邮件；
+- R :: replied, 指用户已经 *回复* 了该邮件；
+- S :: seen, 指用户已经 *查看* 了该邮件；
+- T :: trashed, 指用户将该邮件移入垃圾箱了；
+- D :: draft, 该邮件是草稿；
+- F :: flaged, 用户自定义的标记。
+
+* Gnus
+** notifications
+Emacs 24.2 版本后，提供了提醒功能[fn:2]。
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'gnus-after-getting-new-news-hook 'gnus-notifications)
+#+END_SRC
+** Backend
+*** nnmaildir
+nnmaildir stores mail in the maildir format, with each maildir corresponding to
+a group in Gnus. nnmaildir also stores extra information in the .nnmaildir/
+directory within a maildir.nnmaildir stores article marks and NOV data in each
+maildir. Each maildir will be represented in Gnus as a newsgroup on that
+server.This parameter is not optional; you must specify it. I don’t recommend
+using "~/Mail" or a subdirectory of it; several other parts of Gnus use that
+directory by default for various things, and may get confused if nnmaildir uses
+it too. "~/.nnmaildir" is a typical value.
+Virtual server settings:
+- directory :: is not optional
+- target-prefix :: As a special case, if target-prefix is "" (the default), then
+     when you create a group, the maildir will be created in directory without a
+     corresponding symlink. Beware that you cannot use gnus-group-delete-group
+     on such groups without the force argument.
+* mu4e
+设置变量 =mu4e-user-mail-address-list= 以便 =mu4e= 识别使用者邮件地址，在
+=mu4e-headers-fields= 中的 =:from-or-to= 起作用，即：当发件人的邮件地址属于
+=mu4e-user-mail-address-list= 之一时，在 =headers-view= 中显示收件人而不是显示发
+件人。前提是设置 =mu4e-headers-fields= 中的 =:form-or-to= 。
+#+BEGIN_SRC emacs-lisp
+  (setq mu4e-user-mail-address-list '("zhou.pan@foxmail.com"
+                                      "18554867@qq.com"
+                                      "anyzhou@gmail.com")
+        mu4e-headers-fields '((:human-date . 12)
+                              (:flags . 6)
+                              (:mailing-list . 10)
+                              (:from-or-to . 22)
+                              (:subject)))
+#+END_SRC
+** context
+* notmuch
+[[notmuchmail.org][notmuch]] 是基于 [[xapian.org][Xapian]] 用于实现邮件全局搜索、标记等功能的工具，可与文本编辑器（如
+Emacs）或终端（如 Mutt）结合使用。
+
+配置文件为 =~/.notmuch-config= 。
+
+offlineimap 的 postsynchook 命令能够在同步邮件后更新并标记 notmuch 的数据库。
+** tags
+通过在 notmuch 的配置文件中设置 maildir.synchronize_flags ，notmuch 会在 maildir
+的 flag 标记（邮件文件名中）与 notmuch 的 tag 标签（notmuch 的数据库中）之间保持
+同步。其对应关系为[fn:3]：
+
+然而，notmuch 为了安全起见，其 tag 数据库中的 deleted 标签不与 maildir 的 =T= 标
+记同步，因此不能通过 notmuch 给邮件添加 deleted 标签后经 IMAP 同步到服务器达到删
+除邮件的目的。但可以在本地机器上直接将需要删除的邮件移动到对应的文件夹，再通过
+IMAP 同步到服务器后就可以达到删除该邮件的目的。
+
+比如，QQmail 本地 maildir 中有一个 =Deleted Messages= 文件夹用于存放从邮件服务器
+中同步到本地机器的 *已删除* 邮件。如果觉得某邮件不需要保留，则可将该邮件移动到文
+件夹 =Deleted Messages/cur/= 中。经 offlineimap 的同步，该邮件首先会从服务器的收
+件夹中删除，然后再从本地 =Deleted Messages= 文件夹中同步回服务器的 *已删除*
+中[fn:4]。或者，更简单粗暴地将该邮件从本地 maildir 中删除。
+
+*** Automatically retagging the database
+ 通过增减标签对当前的标签体系进行优化，或者软件升级引入了新的标签等等情形下，需要
+ 对以前生成的数据库进行更新，确保新的标签体系也能应用到以前的邮件。
+ #+BEGIN_EXAMPLE
+ $ notmuch dump --output=$HOME/out.nm
+ $ mv ~/Mail/.notmuch ~/.notmuch.bak
+ $ notmuch new
+ $ notmuch tag -batch -input=/path/to/new/tag/rules
+ $ notmuch restore --accumulate --input=$HOME/out.nm
+ #+END_EXAMPLE
+ 更新后，对新的标签做个检查，检查无误，可以删除临时文件。
+ #+BEGIN_EXAMPLE
+ $ rm -rf ~/.notmuch.bak ~/out.nm
+ #+END_EXAMPLE
+
+** notmuch-emacs
+http://www.holgerschurig.de/en/emacs-notmuch-hello/
+offlineimap同步邮件 -> notmuch new -> notmuch tag -> emacs read
+
+
+- notmuch-hello :: notmuch-emacs 的门户，变量 =notmuch-hello-sections= 控制其显
+     示内容。
+- notmuch-search :: 列示符合搜索条件的邮件（虚拟文件夹功能）
+- notmuch-show :: 显示邮件正文
+
+** 兼容 webmail 的设置
+*** webmail 的一些特性（以 QQmail 为例）
+1. notmuch tags <-> maildir flags <-> IMAP flags .
+
+* offlineimap
+
+http://www.offlineimap.org/
+
+* Send Mail
+[[http://msmtp.sourceforge.net/][msmtp]] 是 notmuch-emacs 推荐的邮件发送程序，可将邮件送到外部的 SMTP 服务器上，并
+且支持不同邮件服务器上的多账户发送邮件。除此之外，Emacs 自带的 smtpmail 也可发送
+邮件。
+** emacs中关于发送邮件的设置
+有许多内容是emacs自带的，与哪种 mua 关系不大，可在 [[./config.el][config.el]] 文件中设置。
+
+即便，不使用 =GNUS= 作为 mua，很多其他的 mua 也使用了 =GNUS= 的许多功能。
+** msmtp 配置文件
+** msmtp 配置文件中的密码存放
+* Key bindings
+
+| Key Binding | mode map              | Description                   |
+|-------------+-----------------------+-------------------------------|
+| j           | mu4e-main-mode-map    | mu4e~headers-jump-to-maildir  |
+|-------------+-----------------------+-------------------------------|
+| J           | mu4e-headers-mode-map | mu4e~headers-jump-to-maildir  |
+| j           |                       | mu4e-headers-next             |
+| k           |                       | mu4e-headers-prev             |
+|-------------+-----------------------+-------------------------------|
+| J           | mu4e-view-mode-map    | mu4e~headers-jump-to-maildir  |
+| n           |                       | mu4e-view-headers-next        |
+| p           |                       | mu4e-view-headers-prev        |
+| C-n         |                       | mu4e-view-headers-next-unread |
+| C-p         |                       | mu4e-view-headers-prev-unread |
+| C-j         |                       | mu4e-view-headers-next        |
+| C-k         |                       | mu4e-view-headers-prev        |
+
+* Footnotes
+
+[fn:4] 这一过程中，offlineimap 处理了该邮件，所以该邮件在本地存储的文件名必然会
+变更。
+
+[fn:3] https://notmuchmail.org/special-tags/
+
+[fn:1] https://dev.mutt.org/trac/wiki/MailConcept
+
+[fn:2] https://julien.danjou.info/blog/2012/gnus-notifications
+
+

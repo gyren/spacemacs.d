@@ -1,0 +1,155 @@
+#+TITLE: xx-org layer
+#+HTML_HEAD_EXTRA: <link rel="stylesheet" type="text/css" href="../css/readtheorg.css" />
+
+#+CAPTION: logo
+
+# The maximum height of the logo should be 200 pixels.
+[[img/xx-org.png]]
+
+* Table of Contents                                        :TOC_4_org:noexport:
+ - [[Description][Description]]
+   - [[GTD][GTD]]
+     - [[workflow][workflow]]
+       - [[daily workflow][daily workflow]]
+     - [[reviews][reviews]]
+       - [[daily][daily]]
+       - [[weekly][weekly]]
+     - [[sync to phone][sync to phone]]
+       - [[org-mobile][org-mobile]]
+   - [[plantuml][plantuml]]
+   - [[org2jekyll][org2jekyll]]
+   - [[插入截图][插入截图]]
+ - [[Install][Install]]
+ - [[Key bindings][Key bindings]]
+
+* Description
+** GTD
+*** workflow
+**** daily workflow
+#+BEGIN_SRC plantuml :file ./img/gtd-daily-workflow.png
+  start
+  fork
+  :org-mobile pull;
+  fork again
+  :weekly agenda view;
+  fork again
+  :笔记本、文件夹等;
+  end fork
+  :daily agenda view;
+  note
+  ,* 补充、调整计划
+  ,* 设定优先级
+  end note
+  :clean **TODO** lists;
+  if (out of time?) then (yes)
+  :rearrange the unfinished tasks;
+  else (no)
+  :pick up tasks from weekly agenda view
+  and **finish** them;
+  endif
+  :review and summary today;
+  note
+  ,* 总结工作心得
+  ,* 查看时间开销
+  end note
+  end
+#+END_SRC
+
+#+RESULTS:
+[[file:./img/gtd-daily-workflow.png]]
+
+*** reviews
+**** daily
+**** weekly
+*** sync to phone
+**** org-mobile
+***** 文件处理流程
+  #+BEGIN_SRC plantuml :file ./img/org-mobile-workflow
+
+
+     +-------------------------+                  +-------------------------+
+     | Local                   |                  | Server                  |
+     +-------------------------+ ------------------ +-------------------------+
+     | org-mobile-files        | ---------------> | org-mobile-directory    |
+     +-------------------------+------------------+-------------------------+
+     |                         | <--------------- |                         |
+     |                         | PULL             |                         |
+     |                         |                  |                         |
+     +-------------------------+                  +-------------------------+
+  #+END_SRC
+   MobileOrg 是一个移动端的应用，可以与经过 org-mobile 模块处理后的特定层次结构的
+   文件进行交互。
+
+   org-mobile 通过变量 =org-mobile-files= 引入输入文件进行处理，默认包括
+   =org-agenda-files= 所列的全部文件，并可通过设置新增其他的文件。
+
+   处理后输出到变量 =org-mobile-directory= 指定的位置，可位于本地也可位于服务器中，
+   但需保证此位置的文件能被 MobileOrg 同步。
+
+   =org-mobile= 有两个 autoload： =org-mobile-pull= 和 =org-mobile-push= 被提取在
+   =org-loaddefs= 文件中。当调用这两个函数的时候， =org-mobile.el= 就会被 =Emacs=
+   加载。
+
+   =mobileorg= 的文件放在 =VPS= 上，通过 =ssh= 访问：
+   #+BEGIN_SRC emacs-lisp
+     (defun xx-org/post-init-org ()
+       (with-eval-after-load 'org
+         (progn
+           ;; some other settings related `org'.
+           (with-eval-after-load 'org-mobile
+             (setq org-mobile-directory "/ssh:xx@45.32.251.39:~/mobileorg/"))
+           ;; else other settings related `org'.
+           )))
+  #+END_SRC
+
+  执行 =org-mobile-push= 命令后，org-mobile 先对 =org-mobile-files= 文件进行处理，
+  为各项目产生 UUID 编号，根据 agenda view 设置生成 agenda.org 文件，最后为所有需
+  要的文件生成 index.org 索引文件，并计算所有文件的校验值写入 checksum.dat。然后将
+  这些文件上传到服务器。
+
+  MobileOrg 将文件同步到移动端，即可离线浏览。除浏览功能外，MobileOrg 还可以编辑和
+  捕获新的日程安排，同步时，这些改动会写入服务器中的 mobileorg.org。
+
+  执行 =org-mobile-pull= 命令时，org-mobile 从服务器上读取 mobileorg.org 中的信息，
+  并将其追加到 =org-mobile-inbox-for-pull= 指明的文件，之后，清空服务器上的
+  mobileorg.org 文件，并重新校验所有文件。如果对原有项目改写的，org 会试图利用这些
+  信息来更新原有项目。
+
+  为了统一电脑端及客户端的捕获，可以将其设置为 org-capture 模块指定的捕获文件中。
+  #+BEGIN_SRC emacs-lisp
+        (setq org-mobile-inbox-for-pull "~/org/agenda/capture.org")
+  #+END_SRC
+
+** plantuml
+#+BEGIN_SRC emacs-lisp
+(setq org-plantuml-jar-path (concat dotspacemacs-directory "assets/plantuml.jar"))
+(org-babel-do-load-languages 'org-babel-load-languages '((plantuml . t)))
+#+END_SRC
+
+#+BEGIN_SRC plantuml :file ./img/orgmode-plantuml.png
+Alice -> Bob: synchronous call
+Alice --> Bob: asynchronous call
+#+END_SRC
+
+#+RESULTS:
+[[file:./img/orgmode-plantuml.png]]
+
+
+** org2jekyll
+
+** 插入截图
+安装 =org-attach-screenshot= 并将其绑定到 ~SPC m i S~ 键。
+
+https://emacs-china.org/t/org-mode/79
+* Install
+To use this contribution add it to your =~/.spacemacs=
+
+#+begin_src emacs-lisp
+  (setq-default dotspacemacs-configuration-layers '(xx-org))
+#+end_src
+
+* Key bindings
+
+| Key Binding     | Description    |
+|-----------------+----------------|
+| ~<SPC> x x x~   | Does thing01   |
