@@ -1,5 +1,8 @@
 (setq-default fill-column 80)
 
+;; use user's fontset for symbols
+(setq use-default-font-for-symbols nil)
+
 ;; (spacemacs/declare-prefix "o" "XX's own")
 
 ;; (spacemacs/declare-prefix "ot" "Toggle")
