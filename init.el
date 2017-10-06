@@ -328,6 +328,13 @@ before packages are loaded. If you are unsure, you should try in setting them in
 
   ;; ss proxy. from https://github.com/zilongshanren/spacemacs-private/blob/develop/init.el
   (setq socks-server '("Default server" "127.0.0.1" 1080 5))
+
+  ;; 修正标题高度。`spacemacs-common.el' 文件引入变量
+  ;; `spacemacs-theme-org-height' 用来控制 `org' `latex' 'markdown' 等文件的
+  ;; 标题高度。英文字体会随着高度的调整而改变字号，但中文字体不会。所以会导
+  ;; 致对齐问题。
+  (setq spacemacs-theme-org-height nil)
+  (setq spacemacs-theme-org-agenda-height nil)
   )
 
 (defun dotspacemacs/user-config ()
