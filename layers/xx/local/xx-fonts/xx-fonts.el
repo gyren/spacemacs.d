@@ -7,7 +7,7 @@
 ;; | aaaaaaaaaaaaaaaaaa | AAAAAAAAAAAAAAAAAA |
 ;; | ~!@#$%^&*()+-=,.;: | { }[ ]< >` '"?\ /_ |
 ;; | 仿佛兮若轻云之蔽月 | 飘飘兮若流风之回雪 |
-;; | 《》「」“”‘’？ | ，。；：！～￥—×…|
+;; | 《》「」“”‘’？ | ，。；：！～￥×…  |
 ;; | 𠄀𠄁𠄂𠄄𠄅𠄆𠄇𠄈𠄉 | 𠄀𠄁𠄂𠄄𠄅𠄆𠄇𠄈𠄉 |
 ;;
 ;; {%/org-mode%}
@@ -19,12 +19,12 @@
 ;; float in points. So, both in same time will cause confuse. You'd better use
 ;; integer.
 (defconst xx-font-profiles
-  '(("prog" (("fonts" . ("Source Code Pro" "Microsoft Yahei" "SimSun-ExtB"))
-             ("tiny" . (10 12 12))
-             ("small" . (12 14 14))
-             ("normal" . (14 16 16))
-             ("large" . (16 20 20))
-             ("huge" . (18 22 22))))
+  '(("prog" (("fonts" . ("Source Code Pro" "Source Han Sans CN" "HanaMinB"));Microsoft Yahei
+             ("tiny" . (12 14 14))
+             ("small" . (14 16 16))
+             ("normal" . (16 20 20))
+             ("large" . (18 22 22))
+             ("huge" . (20 24 24))))
     ("read" (("fonts" . ("Bitstream Vera Sans Mono" "KaiTi" "SimSun-ExtB"))
              ("tiny" . (10 12 12))
              ("small" . (12 14 14))
@@ -37,9 +37,22 @@ The default profile is the first one.
 And the structure of all profiles must be
 same in order to rescale font correctly")
 
+(defconst xx-font-en-favour
+  '(;; unicode bullets such as ◉ ○ ✸ ✿ ■ ◆ ▲ ▶ defined in `org-bullet.el'.
+    ((#x25a0 . #x274b) "DejaVu Sans Mono")
+    ;; re-enable spacemacs' window numbers ➊ ➋ defined in `core-fonts-support.el'
+    ((#x2776 . #x2793) "NanumGothic")
+    ;; mode-line circled letters ⓐ
+    ((#x24b6 . #x24fe) "NanumGothic")
+    ;; mode-line additional characters ⊕
+    ((#x2295 . #x22a1) "NanumGothic")
+    ;; new version lighter ↑
+    ((#x2190 . #x2200) "NanumGothic"))
+  ""
+  )
+
 (defvar xx-font-size "normal"
-  "The value must be one of something defined in `xx-font-profiles'.
-This variable could be modified according to resolution by function `xx//set-fontsize-by-resolution'.")
+  "The value must be one of something defined in `xx-font-profiles'.")
 
 (defcustom xx-set-fontsize-by-resolution t
   "If non-nil, emacs will startup with proper font size according to screen resolution.")
@@ -48,11 +61,8 @@ This variable could be modified according to resolution by function `xx//set-fon
 (defvar xx-current-fontsize nil)
 
 (defun xx//get-fonts-profile ()
-  "Get name of profiles."
-  (let (name)
-    (dolist (profile xx-font-profiles)
-             (push (car profile) name))
-    (reverse name)))
+  "Get name of profiles defined in variable `xx-font-profiles'."
+  (mapcar 'car xx-font-profiles))
 
 (defun xx//get-the-profile-fontlist (profile)
   "Get the fontlist including fontnames and fontsize of the profile"
@@ -69,11 +79,38 @@ This variable could be modified according to resolution by function `xx//set-fon
       (push (car size) sizes))
     (reverse sizes)))
 
+(defun xx//set-fontsize-by-resolution ()
+  "Set font relative size according to resolution.
+`HR' is the abbreviation of `horizontal resolution'.
+0 - 1024 -- 1440 -- 1920 -- 2560 -- ∞
+tiny | small | normal | large | huge"
+  (let* ((HR-list '(0 1024 1440 1920 2560))
+         (l (length HR-list))
+         (rsize-list (xx//get-the-profile-font-sizes (car (xx//get-fonts-profile))))
+         (n 0))
+    (while (and (< (nth n HR-list) (frame-pixel-width))
+                (< n l))
+      (setq n (+ n 1)))
+    (nth (- n 1) rsize-list)))
+
+(defun xx//set-favour-font ()
+  ""
+  (mapcar
+   (lambda (en-favour)
+     (set-fontset-font t (car en-favour) (cadr en-favour) nil 'prepend))
+   xx-font-en-favour)
+)
+
 (defun xx//set-font (&optional size profile)
   "Set the fontset with the profile.
 If the profile is not given,use the first profile in `xx-font-profiles'."
-  (let* ((size (or size xx-current-fontsize xx-font-size))
-         (profile (or profile xx-current-profile (car (xx//get-fonts-profile))))
+  (let* ((size (or size
+                   (and xx-set-fontsize-by-resolution (xx//set-fontsize-by-resolution))
+                   xx-current-fontsize
+                   xx-font-size))
+         (profile (or profile
+                      xx-current-profile
+                      (car (xx//get-fonts-profile))))
          (fontlist (xx//get-the-profile-fontlist profile))
          (fonts (cdr (assoc "fonts" fontlist)))
          (rsize (cdr (assoc size fontlist)))
@@ -115,6 +152,10 @@ If the profile is not given,use the first profile in `xx-font-profiles'."
                                       :size extb-size
                                       :weight 'normal
                                       :slant 'normal)))
+    ;; 移除 spacemacs 中 `core-fonts-support.el' 文件的以下命令带来的影响。
+    ;; (push `(font . ,(frame-parameter nil 'font)) default-frame-alist)
+    (assq-delete-all 'font default-frame-alist)
+
     ;; set English font.
     (set-face-attribute 'default nil :font en-main-fontspec)
     (set-face-font 'bold en-bold-fontspec)
@@ -123,26 +164,34 @@ If the profile is not given,use the first profile in `xx-font-profiles'."
     ;; 设置中文字体，不能使用 `unicode' 字符集，否则将覆盖上述英文字体的设置。
     (dolist (charset '(kana han cjk-misc bopomofo gb18030))
       (set-fontset-font t charset zh-main-fontspec))
-    ;; 设置 Ext-B 字体。
-    (set-fontset-font t nil zh-extb-fontspec nil 'prepend)
+    ;; 设置 CJK Unified Ideographs Extension B 字体。
+    (set-fontset-font t '(#x20000 . #x2a6df) zh-extb-fontspec nil 'prepend)
+    ;; 设置 CJK Unified Ideographs Extension C 字体。
+    (set-fontset-font t '(#x2a700 . #x2b73f) zh-extb-fontspec nil 'prepend)
+    ;; 设置 CJK Unified Ideographs Extension D 字体。
+    (set-fontset-font t '(#x2b740 . #x2b81f) zh-extb-fontspec nil 'prepend)
+    (xx//set-favour-font)
+    ;; 设置以上字体后，调整 modeline(powerline) 的高度。
+    (setq-default powerline-height (frame-char-height));(spacemacs/compute-powerline-height))
+    (powerline-reset)
     (setq xx-current-profile profile
           xx-current-fontsize size)
     (message "Your font profile is `%s' and size is `%s'." profile size)
     ))
 
-(defun xx//set-fontsize-by-resolution ()
-  "Set font relative size according to resolution.
-`HR' is the abbreviation of `horizontal resolution'.
-0 - 1024 -- 1440 -- 1920 -- 2560 -- ∞
-tiny | small | normal | large | huge"
-  (let* ((HR-list '(0 1024 1440 1920 2560))
-         (l (length HR-list))
-         (rsize-list (xx//get-the-profile-font-sizes (car (xx//get-fonts-profile))))
-         (n 0))
-    (while (and (< (nth n HR-list) (frame-pixel-width))
-                (< n l))
-      (setq n (+ n 1)))
-    (setq xx-font-size (nth (- n 1) rsize-list))))
+(defun xx/set-font ()
+  (interactive)
+  ;; 移除 spacemacs 中 `core-fonts-support.el' 文件的以下命令带来的影响。
+  ;; (push `(font . ,(frame-parameter nil 'font)) default-frame-alist)
+  (assq-delete-all 'font default-frame-alist)
+
+  (xx//set-font)
+  (xx//set-favour-font)
+
+  ;; 设置以上字体后，调整 modeline(powerline) 的高度。
+  (setq-default powerline-height (frame-char-height));(spacemacs/compute-powerline-height))
+  (powerline-reset)
+  )
 
 (defun xx//rescale-fontsize (step)
   "Rescale font size.
