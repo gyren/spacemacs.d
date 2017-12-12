@@ -8,6 +8,7 @@
     ;; helm-pass
     ;; auth-password-store
     plantuml-mode
+    pyim
     (sdcv-mode :location local)
     (xx-fonts :location local)
     youdao-dictionary))
@@ -17,6 +18,40 @@
   (use-package pass
     :defer t
     ))
+
+;; pyim
+(defun xx/init-pyim ()
+  (use-package pyim
+    ;; :bind
+    ;; (("M-j" . pyim-convert-code-at-point) ;与 pyim-probe-dynamic-english 配合
+    ;;  ("C-;" . pyim-delete-word-from-personal-buffer))
+    :init
+    (progn
+      (setq pyim-use-tooltip t
+            pyim-page-tooltip 'popup
+            pyim-directory (expand-file-name "pyim/" spacemacs-cache-directory)
+            pyim-dicts-directory (expand-file-name "assets/pyimdicts/" dotspacemacs-directory)
+            pyim-dcache-directory (expand-file-name "dcache/" pyim-directory)
+            pyim-personal-file (expand-file-name "pyim-personal.txt" pyim-directory)
+            pyim-bigdict-file (expand-file-name "pyim-bigdict.pyim" pyim-dicts-directory)
+            pyim-greatdict-file (expand-file-name "pyim-greatdict.pyim" pyim-dicts-directory)
+            pyim-dicts `((:name "greatdict" :file ,pyim-greatdict-file)
+                         (:name "bigdict" :file ,pyim-bigdict-file))
+
+            default-input-method "pyim"
+            pyim-page-length 9
+
+            pyim-english-input-switch-functions
+            '(pyim-probe-auto-english
+              pyim-probe-dynamic-english
+              pyim-probe-evil-normal-mode
+              pyim-probe-isearch-mode
+              pyim-probe-org-structure-template))
+
+      ;; 让 Emacs 启动时自动加载 pyim 词库
+      ;; (add-hook 'emacs-startup-hook
+      ;;           #'(lambda () (pyim-restart-1 t)))
+      )))
 
 ;; plantuml-mode
 (defun xx/init-plantuml-mode ()
