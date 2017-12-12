@@ -7,42 +7,11 @@
 
 ;;; Code:
 (setq xx-org-packages
-      '(
-        ego
-        ;; ob, org are installed by `org-plus-contrib'
-        (ob :location built-in)
-        org2jekyll
+      '((ob :location built-in)     ; ob, org are installed by `org-plus-contrib'
+        org2web
         org-attach-screenshot
-        ;;org-projectile
         org-pomodoro
-        ;;(org-projectile :toggle (configuration-layer/package-usedp 'projectile))
         (org :location built-in)))
-
-;; EGO is a static site generator that depends on Emacs, Git and Org-mode.
-;; https://github.com/emacs-china/EGO
-(defun xx-org/init-ego ()
-    (use-package ego
-      :commands (ego-add-to-alist)
-      :defer t
-      :config
-      (ego-add-to-alist 'ego-project-config-alist
-                        `(("2fen" ; 站点工程的名字
-                           :repository-directory "~/repo/gyren.github.io" ; 站点的本地目录
-                           :site-domain "http://gyren.github.io/" ; 站点的网址
-                           :site-main-title "2fen" ; 站点的标题
-                           :site-sub-title "2fen" ; 站点的副标题
-                           :theme (default) ; 使用的主题
-                           :summary (("years" :year :updates 10) ("authors" :authors) ("tags" :tags)) ; 导航栏的设置，有 category 和 summary 两种
-                           :source-browse-url ("Github" "https://github.com/gyren") ; 你的工程源代码所在的位置
-                           :personal-disqus-shortname "emacs-china" ; 使用 disqus 评论功能的话，它的短名称
-                           :personal-duoshuo-shortname "emacs-china" ; 使用 多说 评论功能的话，它的短名称
-                           :confound-email nil ; 是否保护邮件名称呢？t 是保护，nil 是不保护，默认是保护
-                           :ignore-file-name-regexp "readme.org" ; 有些不想发布成 html 的 org 文件（但是又想被导入 git 进行管理），可以用这种正则表达的方式排除
-                           :web-server-docroot "~/tmp/gyren.github.io" ; 本地测试的目录
-                           :web-server-port 5432); 本地测试的端口
-
-                          ;; 你可以在此添加更多的站点设置
-                        ))))
 
 ;; ob, org-babel
 (defun xx-org/post-init-ob ()
@@ -65,74 +34,36 @@
     (spacemacs/set-leader-keys-for-major-mode 'org-mode
       "iS" 'org-attach-screenshot)))
 
-(defun xx-org/init-org2jekyll ()
-  (use-package org2jekyll
+(defun xx-org/init-org2web ()
+  (use-package org2web
     :defer t
     :init
-    (spacemacs/declare-prefix-for-mode 'org-mode "mj" "jekyll")
-    (spacemacs/set-leader-keys-for-major-mode 'org-mode
-      "jp" 'org2jekyll-publish
-      "jd" 'org2jekyll-create-draft)
-
-    (spacemacs/declare-prefix "aoj" "jekyll")
-    (spacemacs/set-leader-keys
-      "aojp" 'org2jekyll-publish
-      "aojd" 'org2jekyll-create-draft)
+    (setq org2web-temporary-directory "~/tmp/org2web")
     :config
-    (progn
-      (setq org2jekyll-blog-author "②分"
-            org2jekyll-source-directory (expand-file-name "~/org/jekyll-org/")
-            org2jekyll-jekyll-directory (expand-file-name "~/jekyll-sites/")
-            org2jekyll-jekyll-drafts-dir ""
-            org2jekyll-jekyll-posts-dir "_posts/")
-      (setq org-publish-project-alist
-            (append org-publish-project-alist
-                    `(("default"
-                       :base-directory ,(org2jekyll-input-directory)
-                       :base-extension "org"
-                       :publishing-directory ,(org2jekyll-output-directory)
-                       :publishing-function org-html-publish-to-html
-                       :headline-levels 4
-                       :section-numbers nil
-                       :with-toc nil
-                       :html-preamble t
-                       :html-head "<link rel=\"stylesheet\" href=\"./css/style.css\" type=\"text/css\"/>"
-                       :recursive t
-                       :make-index t
-                       :html-extension "html"
-                       :body-only t)
-                      ("post"
-                       :base-directory ,(org2jekyll-input-directory)
-                       :base-extension "org"
-                       :publishing-directory ,(org2jekyll-output-directory org2jekyll-jekyll-posts-dir)
-                       :publishing-function org-html-publish-to-html
-                       :headline-levels 4
-                       :section-numbers nil
-                       :with-toc nil
-                       :html-preamble t
-                       :html-head "<link rel=\"stylesheet\" href=\"./css/style.css\" type=\"text/css\"/>"
-                       :recursive t
-                       :make-index t
-                       :html-extension "html"
-                       :body-only t)
-                      ("assets"
-                       :base-directory ,(org2jekyll-input-directory "assets")
-                       :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf\\|php\\|yml\\|html\\|scss\\|ttf\\|el"
-                       :publishing-directory ,(org2jekyll-output-directory "assets")
-                       :publishing-function org-publish-attachment
-                       :recursive t)
-                      ("attachments"
-                       :base-directory ,(org2jekyll-input-directory "attachments")
-                       :base-extension ""
-                       :publishing-directory ,(org2jekyll-output-directory "attachments")
-                       :publishing-function org-publish-attachment
-                       :recursive t)))))))
+    (org2web-add-project
+     '("posts"
+       :repository-directory "~/org/site-source/"
+       :remote (git "https://github.com/gyren/gyren.github.com.git" "master")
+       :site-domain "https://gyren.github.io/"
+       :site-main-title "②分"
+       :site-sub-title "行善不以名，而名从之；名不与利期，而利归之；利不与争期，而争及之。故君子必慎为善。---《列子》"
+       :default-category "documents"
+       :category-ignore-list ("attachments" "themes")
+       :theme-root-directory "~/org/site-theme"
+       :theme (worg killjs)
+       :force-absolute-url t
+       ;:source-browse-url ("GitHub" "https://github.com/gyren/gyren.github.com")
+       ;:personal-avatar "/media/img/horse.jpg"
+       ;:preparation-function org2web-el2org-preparation-function
+       :org-export-function org2web-el2org-org-export-function
+       :web-server-docroot "~/tmp/www/"))
+    ))
 
 (defun xx-org/post-init-org ()
   (with-eval-after-load 'org
     (progn
       ;; 文件结构
-      (setq ; org-directory "~/org" ; default 
+      (setq ; org-directory "~/org" ; default
        org-agenda-files (list "~/org/agenda")
        ; org-default-notes-file (concat org-directory "/agenda/.notes.org")
        )
