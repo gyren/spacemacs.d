@@ -35,7 +35,7 @@
         notmuch
         mu4e
         ;; wanderlust
-        org
+        ;; org
         ))
 
 (defun xx-email/post-init-gnus ()
@@ -235,8 +235,8 @@
     ;; Enable Desktop notifications
     (mu4e-alert-set-default-style 'libnotify)))
 
-(defun xx-email/post-init-org ()
-  ;; load org-notmuch when org is actually loaded
-  (with-eval-after-load 'org (require 'org-notmuch nil 'noerror)))
+;; (defun xx-email/post-init-org ()
+;;   ;; load org-notmuch when org is actually loaded
+;;   (with-eval-after-load 'org (require 'org-notmuch nil 'noerror)))
 
 ;;; packages.el ends here
