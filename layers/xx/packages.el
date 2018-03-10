@@ -107,7 +107,7 @@
 
             pyim-english-input-switch-functions
             '(pyim-probe-auto-english
-              pyim-probe-dynamic-english
+              ;; pyim-probe-dynamic-english
               pyim-probe-evil-normal-mode
               pyim-probe-isearch-mode
               pyim-probe-org-structure-template))
