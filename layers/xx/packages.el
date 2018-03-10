@@ -13,87 +13,11 @@
     (xx-fonts :location local)
     youdao-dictionary))
 
-;; password-store
-(defun xx/init-pass ()
-  (use-package pass
-    :defer t
+;; calendar
+(defun xx/init-cal-china-plus ()
+  (use-package cal-china-plus
     ))
 
-;; pyim
-(defun xx/init-pyim ()
-  (use-package pyim
-    ;; :bind
-    ;; (("M-j" . pyim-convert-code-at-point) ;与 pyim-probe-dynamic-english 配合
-    ;;  ("C-;" . pyim-delete-word-from-personal-buffer))
-    :init
-    (progn
-      (setq pyim-use-tooltip t
-            pyim-page-tooltip 'popup
-            pyim-directory (expand-file-name "pyim/" spacemacs-cache-directory)
-            pyim-dicts-directory (expand-file-name "assets/pyimdicts/" dotspacemacs-directory)
-            pyim-dcache-directory (expand-file-name "dcache/" pyim-directory)
-            pyim-personal-file (expand-file-name "pyim-personal.txt" pyim-directory)
-            pyim-bigdict-file (expand-file-name "pyim-bigdict.pyim" pyim-dicts-directory)
-            pyim-greatdict-file (expand-file-name "pyim-greatdict.pyim" pyim-dicts-directory)
-            pyim-dicts `((:name "greatdict" :file ,pyim-greatdict-file)
-                         (:name "bigdict" :file ,pyim-bigdict-file))
-
-            default-input-method "pyim"
-            pyim-page-length 9
-
-            pyim-english-input-switch-functions
-            '(pyim-probe-auto-english
-              pyim-probe-dynamic-english
-              pyim-probe-evil-normal-mode
-              pyim-probe-isearch-mode
-              pyim-probe-org-structure-template))
-
-      ;; 让 Emacs 启动时自动加载 pyim 词库
-      ;; (add-hook 'emacs-startup-hook
-      ;;           #'(lambda () (pyim-restart-1 t)))
-      )))
-
-;; plantuml-mode
-(defun xx/init-plantuml-mode ()
-  (use-package plantuml-mode
-    :defer t
-    :init
-    (setq plantuml-jar-path (concat dotspacemacs-directory "assets/plantuml.jar"))))
-
-;; sdcv-mode
-(defun xx/init-sdcv-mode ()
-  (use-package sdcv-mode
-    :defer t
-    :commands (sdcv-search)
-    :init
-    (spacemacs/set-leader-keys "os" 'sdcv-search)))
-
-;; xx-fonts
-(defun xx/init-xx-fonts ()
-  (use-package xx-fonts
-    :demand                             ; To override `defer' keyword.
-    :commands (xx//set-font xx/increase-fontsize xx/decrease-fontsize)
-    :init
-    (spacemacs/set-leader-keys "o+" 'xx/increase-fontsize)
-    (spacemacs/set-leader-keys "o-" 'xx/decrease-fontsize)
-    :config
-    ;;(xx//set-font)
-    (add-hook 'after-init-hook 'xx//set-font)))
-
-;; youdao-dictionary. Stolen from chinese layer.
-(defun xx/init-youdao-dictionary ()
-  (use-package youdao-dictionary
-    :defer
-    :init
-    (spacemacs/set-leader-keys "oy" 'youdao-dictionary-search)
-    :config
-    (setq url-automatic-caching t
-          ;; set file path for saving search history
-          youdao-dictionary-search-history-file (concat spacemacs-cache-directory ".youdao")
-          ;; Enable Chinese word segmentation support
-          youdao-dictionary-use-chinese-word-segmentation t)))
-
-;; calendar
 (defun xx/init-cal-china-x ()
   (use-package cal-china-x
     :config
@@ -146,15 +70,85 @@
         ad-do-it))
     ))
 
-(defun xx/init-cal-china-plus ()
-  (use-package cal-china-plus
+;; password-store
+(defun xx/init-pass ()
+  (use-package pass
+    :defer t
     ))
 
-;; chinese-fonts-setup
-;; (defun xx/init-chinese-fonts-setup ()
-;;   (use-package chinese-fonts-setup
-;;     :init
-;;     (setq cfs-profiles '("normal" "prog" "org-mode")
-;;           cfs-profiles-directory (concat dotspacemacs-directory "chinese-fonts-setup/"))))
+;; plantuml-mode
+(defun xx/init-plantuml-mode ()
+  (use-package plantuml-mode
+    :defer t
+    :init
+    (setq plantuml-jar-path (concat dotspacemacs-directory "assets/plantuml.jar"))))
+
+;; pyim
+(defun xx/init-pyim ()
+  (use-package pyim
+    ;; :bind
+    ;; (("M-j" . pyim-convert-code-at-point) ;与 pyim-probe-dynamic-english 配合
+    ;;  ("C-;" . pyim-delete-word-from-personal-buffer))
+    :init
+    (progn
+      (setq pyim-use-tooltip t
+            pyim-page-tooltip 'popup
+            pyim-directory (expand-file-name "pyim/" spacemacs-cache-directory)
+            pyim-dicts-directory (expand-file-name "assets/pyimdicts/" dotspacemacs-directory)
+            pyim-dcache-directory (expand-file-name "dcache/" pyim-directory)
+            pyim-personal-file (expand-file-name "pyim-personal.txt" pyim-directory)
+            pyim-bigdict-file (expand-file-name "pyim-bigdict.pyim" pyim-dicts-directory)
+            pyim-greatdict-file (expand-file-name "pyim-greatdict.pyim" pyim-dicts-directory)
+            pyim-dicts `((:name "greatdict" :file ,pyim-greatdict-file)
+                         (:name "bigdict" :file ,pyim-bigdict-file))
+
+            default-input-method "pyim"
+            pyim-page-length 9
+
+            pyim-english-input-switch-functions
+            '(pyim-probe-auto-english
+              pyim-probe-dynamic-english
+              pyim-probe-evil-normal-mode
+              pyim-probe-isearch-mode
+              pyim-probe-org-structure-template))
+
+      ;; 让 Emacs 启动时自动加载 pyim 词库
+      ;; (add-hook 'emacs-startup-hook
+      ;;           #'(lambda () (pyim-restart-1 t)))
+      )))
+
+;; sdcv-mode
+(defun xx/init-sdcv-mode ()
+  (use-package sdcv-mode
+    :defer t
+    :commands (sdcv-search)
+    :init
+    (spacemacs/set-leader-keys "os" 'sdcv-search)))
+
+;; xx-fonts
+(defun xx/init-xx-fonts ()
+  (use-package xx-fonts
+    :demand                             ; To override `defer' keyword.
+    :commands (xx//set-font xx/increase-fontsize xx/decrease-fontsize)
+    :init
+    (spacemacs/set-leader-keys "o+" 'xx/increase-fontsize)
+    (spacemacs/set-leader-keys "o-" 'xx/decrease-fontsize)
+    :config
+    ;;(xx//set-font)
+    (add-hook 'after-init-hook 'xx//set-font)))
+
+;; youdao-dictionary. Stolen from chinese layer.
+(defun xx/init-youdao-dictionary ()
+  (use-package youdao-dictionary
+    :defer
+    :init
+    (spacemacs/set-leader-keys "oy" 'youdao-dictionary-search-at-point-tooltip)
+    :config
+    (setq url-automatic-caching t
+          ;; set file path for saving search history
+          youdao-dictionary-search-history-file (concat spacemacs-cache-directory ".youdao")
+          ;; Enable Chinese word segmentation support
+          youdao-dictionary-use-chinese-word-segmentation t)))
+
 
 ;;; packages.el ends here

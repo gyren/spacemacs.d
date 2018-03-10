@@ -100,15 +100,15 @@
     :bind (:map dired-mode-map
                 ("/" . dired-narrow))))
 
+;; Stolen from chinese layer.
+(defun xx-dired/init-find-by-pinyin-dired ()
+  (use-package find-by-pinyin-dired
+    :defer t))
+
 (defun xx-dired/init-peep-dired ()
   (use-package peep-dired
     :defer t
     :bind (:map dired-mode-map
                 ("P" . peep-dired))))
-
-;; Stolen from chinese layer.
-(defun xx-dired/init-find-by-pinyin-dired ()
-  (use-package find-by-pinyin-dired
-    :defer t))
 
 ;;; packages.el ends here

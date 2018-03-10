@@ -9,6 +9,7 @@
 (setq xx-org-packages
       '((ob :location built-in)     ; ob, org are installed by `org-plus-contrib'
         org2web
+        (org-agenda :location built-in)
         org-attach-screenshot
         org-pomodoro
         (org :location built-in)))
@@ -165,22 +166,21 @@ unwanted space when exporting org-mode to html."
 
       ;; org-checklist
       (add-to-list 'org-modules 'org-checklist)
-
-      ;; MobileOrg
-      (with-eval-after-load 'org-mobile
-        ;; 或者本地路径 "~/org/mobileorg/"
-        (setq org-mobile-directory "/ssh:xx@45.32.251.39:~/mobileorg/"))
-
       )))
 
-(defun xx-org/post-init-org-projectile ()
-  (with-eval-after-load 'org-agenda
-    (setq org-agenda-files (append org-agenda-files (org-projectile:todo-files)))))
-
-;; (with-eval-after-load 'org-agenda
-;;   (progn
-;;     (require 'org-projectile)
-;;     (setq org-agenda-files (append org-agenda-files (org-projectile:todo-files)))))
+(defun xx-org/post-init-org-agenda ()
+  (progn
+    (setq org-agenda-custom-commands
+          '(("wt" "Works TODO" tags "works/TODO")
+            ("wn" "Works NEXT" tags "works/NEXT")))
+    (if (configuration-layer/package-usedp 'org-projectile)
+        (progn
+          (require 'org-projectile)
+          (setq org-agenda-files
+                (append org-agenda-files
+                        (remove nil (mapcar #'(lambda (x)
+                                               (if (file-exists-p x) x))
+                                            (org-projectile-todo-files)))))))))
 
 (defun xx-org/post-init-org-pomodoro ()
   (with-eval-after-load 'org-pomodoro
