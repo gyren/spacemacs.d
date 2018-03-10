@@ -45,12 +45,14 @@ values."
      gnus
      git
      html
+     ipython-notebook
      javascript
      ;; markdown
      (mu4e :variables
            mu4e-enable-notifications t
            mu4e-enable-mode-line t)
      org
+     python
      ;; (shell :variables
      ;;        shell-default-height 30
      ;;        shell-default-position 'bottom)
