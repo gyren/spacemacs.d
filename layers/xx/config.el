@@ -1,6 +1,7 @@
 (setq-default fill-column 80)
 
-;; use user's fontset for symbols
+;; use user's fontset for symbols, such as `xx-font-en-favour' customization in
+;; `xx-font.el'.
 (setq use-default-font-for-symbols nil)
 
 ;; (spacemacs/declare-prefix "o" "XX's own")

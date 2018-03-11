@@ -19,7 +19,7 @@
 ;; float in points. So, both in same time will cause confuse. You'd better use
 ;; integer.
 (defconst xx-font-profiles
-  '(("prog" (("fonts" . ("Source Code Pro" "Source Han Sans CN" "HanaMinB"));Microsoft Yahei
+  '(("prog" (("fonts" . ("Source Code Pro" "思源黑体 Regular" "HanaMinB"));Microsoft Yahei
              ("tiny" . (12 14 14))
              ("small" . (14 16 16))
              ("normal" . (16 20 20))
@@ -47,7 +47,11 @@ same in order to rescale font correctly")
     ;; mode-line additional characters ⊕
     ((#x2295 . #x22a1) "NanumGothic")
     ;; new version lighter ↑
-    ((#x2190 . #x2200) "NanumGothic"))
+    ((#x2190 . #x2200) "NanumGothic")
+    ;; `‘' `’'
+    ((#x2018 . #x2019) "Source Code Pro")
+    ;;
+    ((#x2501 . #x254b) "Source Code Pro"))
   ""
   )
 
