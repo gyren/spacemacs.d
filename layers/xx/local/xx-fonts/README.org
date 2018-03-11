@@ -1,3 +1,4 @@
+#+STARTUP: indent
 * 字体设置
 现代版本的 Emacs 已经可以支持[[info:emacs#International][多国语言]]的字符集（Character sets）和字符编码
 （encoding）。包括对含有非 ASCII 字符文件的访问、保存，在 Emacs 与其调用的程序间
@@ -6,9 +7,8 @@
 从根本上讲，目前的计算机底层只能处理 2 种信号，即高电平和低电平，惯例将之称为 1
 和 0。通过显示设备呈现出来的所有信息，对计算机来说只是 1 和 0 的不同排列，我们所
 看到的“字”也不例外。从计算机的角度看，可以根据使用者的设定，将二进制信息
-=00110001= 理解和呈现为阿拉伯数字 =1= （即 ASCII 编码），也可将二进制信息
-=10000= 理解和呈现为阿拉伯数字 =1= （即莫尔斯电码，如果将短声作为 1 ，长声作为 0
-的话）。
+=00110001= 理解和呈现为阿拉伯数字 =1= （即 ASCII 编码），也可将二进制信息=10000=
+理解和呈现为阿拉伯数字 =1= （即莫尔斯电码，如果将短声作为 1 ，长声作为 0的话）。
 
 为了便于互相交流，需要将二进制信息与一系列字符组成的集合（character set）之间的
 对应关系统一起来，这种对应关系就是字符编码（character encoding）。最早最广泛使用
@@ -99,10 +99,10 @@ DBCS系列标准里，最大的特点是两字节长的汉字字符和一字节�
 Character Set”，简称 UCS, 俗称 “unicode”。
 
 unicode开始制订时，计算机的存储器容量极大地发展了，空间再也不成为问题了。于是
-ISO 就直接规定必须用两个字节，也就是 16 位来统一表示所有的字符，对于ASCII里的那
-些“半角”字符，unicode 保持其原编码不变，只是将其长度由原来的 8 位扩展为 16 位，
-而其他文化和语言的字符则全部重新统一编码。由于“半角”英文符号只需要用到低 8 位，
-所以其高 8 位永远是 0，因此这种大气的方案在保存英文文本时会多浪费一倍的空间。
+ISO 就直接规定必须用两个字节，也就是 16 位来统一表示所有的字符，对于 ASCII 里的
+那些“半角”字符，unicode 保持其原编码不变，只是将其长度由原来的 8 位扩展为 16
+位，而其他文化和语言的字符则全部重新统一编码。由于“半角”英文符号只需要用到低 8
+位，所以其高 8 位永远是 0，因此这种大气的方案在保存英文文本时会多浪费一倍的空间。
 
 这时候，从旧社会里走过来的程序员开始发现一个奇怪的现象：他们的 strlen 函数靠不住
 了，一个汉字不再是相当于两个字符了，而是一个！是的，从 unicode 开始，无论是半角
@@ -111,11 +111,11 @@ ISO 就直接规定必须用两个字节，也就是 16 位来统一表示所有
 元，而“字符”则是一个文化相关的符号。在 unicode 中，一个字符就是两个字节。一个
 汉字算两个英文字符的时代已经快过去了。
 
-unicode 同样也不完美，这里就有两个的问题，一个是，如何才能区别 unicode 和 ascii？
-计算机怎么知道三个字节表示一个符号，而不是分别表示三个符号呢？第二个问题是，我们
-已经知道，英文字母只用一个字节表示就够了，如果 unicode 统一规定，每个符号用三个
-或四个字节表示，那么每个英文字母前都必然有二到三个字节是 0，这对于存储空间来说是
-极大的浪费，文本文件的大小会因此大出二三倍，这是难以接受的。
+unicode 同样也不完美，这里就有两个的问题，一个是，如何才能区别 unicode 和 ascii
+？计算机怎么知道三个字节表示一个符号，而不是分别表示三个符号呢？第二个问题是，我
+们已经知道，英文字母只用一个字节表示就够了，如果 unicode 统一规定，每个符号用三
+个或四个字节表示，那么每个英文字母前都必然有二到三个字节是 0，这对于存储空间来说
+是极大的浪费，文本文件的大小会因此大出二三倍，这是难以接受的。
 
 unicode 在很长一段时间内无法推广，直到互联网的出现，为解决 unicode 如何在网络上
 传输的问题，于是面向传输的众多 UTF（UCS Transfer Format）标准出现了，顾名思义，
@@ -215,7 +215,7 @@ script 设置字体。如有需要，应单独对属于 =symbol= 类的特定字
 2 ，但实际显示的宽度为 1 ，也会导致 Org 表格的对齐问题。针对这一类，可以修改
 Emacs 的宽度识别：
 #+BEGIN_SRC emacs-lisp
-(defconst xx-chars-width-should-be-1 "×±÷")
+  (defconst xx-chars-width-should-be-1 "×±÷")
 
   (defun xx//set-char-width-to-1 (alist)
     (while (char-table-parent char-width-table)
@@ -230,7 +230,7 @@ Emacs 的宽度识别：
         (set-char-table-parent table char-width-table)
         (setq char-width-table table))))
 
-(char-width (string-to-char "×"))
+  (char-width (string-to-char "×"))
 
   (blaenk/set-char-widths
    `((1 . (,(string-to-char "“")
@@ -241,26 +241,25 @@ Emacs 的宽度识别：
 
 *** brep@emacs.newsmth 关于 Emacs23 版本编码的综述
 http://www.newsmth.net/bbscon.php?bid=573&id=44992
-Emacs 的编码系统这个话题太大了，得写一篇很长的文章才能说清楚。而且
-对于用户来说，可能并不感兴趣，也不关心这个。
 
-Emacs22 的编码原理是让多个国家的编码系统共存。buffer里的每一个字符
-都用 1－4 个字节表示，比如 gb2312 的汉字就是用3个字节表示，这三个
-字节中的第一个字节叫 leading byte, 说明了这个字符所属的字符集，后
-面两个字节是这个字符的gb2312编码。chinese-gb2312 的 leading byte
-是 0x91, big5 因为比较大，所以分成了两个 charset: chinese-big5-1
-和 chinese-big5-2, leading byte 分别是 0x98 和 0x99。
+ Emacs 的编码系统这个话题太大了，得写一篇很长的文章才能说清楚。而且对于用户来说，
+可能并不感兴趣，也不关心这个。
 
-所以对于 Emacs22 来说，只要查看一个字符的 leading byte，就可以知道
-它属于哪个字符集，一看是 0x91 就知道它是 gb2312 字符，一看是 0x98
-就知道它是 big5 字符。所以一个汉字可能会有好几种内部编码，比如“好”
-字，gb2312, big5, 朝鲜文, 日文中都有这个字，那么它就有四种内部编码。
+Emacs22 的编码原理是让多个国家的编码系统共存。buffer里的每一个字符都用 1－4 个字
+节表示，比如 gb2312 的汉字就是用3个字节表示，这三个字节中的第一个字节叫 leading
+byte, 说明了这个字符所属的字符集，后面两个字节是这个字符的gb2312编码。
+chinese-gb2312 的 leading byte是 0x91, big5 因为比较大，所以分成了两个 charset:
+chinese-big5-1和 chinese-big5-2, leading byte 分别是 0x98 和 0x99。
 
-当 Emacs22 打开一个文件的时候，就需要判断出这个文件的编码系统，然
-后给文件中的每个字符加上 leading byte，放到内存中，Emacs22把这个过
-程叫做 decode。当emacs22保存文件时就需要根据每个字符的 leading
-byte 把它转换成相应字符集的编码，再写到文件中，emacs22把这个过程叫
-做 encode。
+所以对于 Emacs22 来说，只要查看一个字符的 leading byte，就可以知道它属于哪个字符
+集，一看是 0x91 就知道它是 gb2312 字符，一看是 0x98就知道它是 big5 字符。所以一
+个汉字可能会有好几种内部编码，比如“好”字，gb2312, big5, 朝鲜文, 日文中都有这个
+字，那么它就有四种内部编码。
+
+当 Emacs22 打开一个文件的时候，就需要判断出这个文件的编码系统，然后给文件中的每
+个字符加上 leading byte，放到内存中，Emacs22把这个过程叫做 decode。当emacs22保存
+文件时就需要根据每个字符的 leading byte 把它转换成相应字符集的编码，再写到文件中，
+emacs22把这个过程叫做 encode。
 
 为了演示 Emacs decode/encode 的过程，我们可以做个小实验：
 
@@ -276,75 +275,71 @@ byte 把它转换成相应字符集的编码，再写到文件中，emacs22把�
     我们可以看到 \221\326\320\221\316\304，Emacs在每个汉字的编码前都加
     上了一个 \221，正是十六进制的 0x91——gb2312的 leading byte。
 
-然而，leading byte 的数量是有限的，而世界上的字符集却越来越多，因
-此当 gbk 和 gb18030 出现以后，就没有合适的 leading byte 分配给它们，
-所以 Emacs22 不支持 gbk 和 gb18030。
+然而，leading byte 的数量是有限的，而世界上的字符集却越来越多，因此当 gbk 和
+gb18030 出现以后，就没有合适的 leading byte 分配给它们，所以 Emacs22 不支持 gbk
+和 gb18030。
 
-苏勇和詹剑写的 mule-gbk，实际上是把全部的gbk字符分成了三部分，分别
-占用了 chinese-cns-5, chinese-cns-6, chinese-cns-7 的 3 个
-leading byte。mule-gbk 的主要代码就是把 gbk 中的字符加上这三个
-leading byte 之一，放入内存，也就是 decode；或者反过来把内存中带有
-这三个 leading byte 之一的字符转换成 gbk 编码，也就是 encode。
-Emacs为了方便进行各种编码的转换，专门内嵌了一种称为 ccl 的语言，编
-码转换部分的代码就是用 ccl 写成的。
+苏勇和詹剑写的 mule-gbk，实际上是把全部的gbk字符分成了三部分，分别占用了
+chinese-cns-5, chinese-cns-6, chinese-cns-7 的 3 个leading byte。mule-gbk 的主要
+代码就是把 gbk 中的字符加上这三个leading byte 之一，放入内存，也就是 decode；或
+者反过来把内存中带有这三个 leading byte 之一的字符转换成 gbk 编码，也就是 encode。
+Emacs为了方便进行各种编码的转换，专门内嵌了一种称为 ccl 的语言，编码转换部分的代
+码就是用 ccl 写成的。
 
-Emacs23的编码原理是把所有的字符集都转换成 utf-8，内部字符都是
-utf-8 编码。这样对于每个字符集都需要两张表，一个是 charset -->
-utf-8，另一个是 utf-8 --> charset。Emacs23源码的 etc/charsets/ 目录
-下有很多 *.map 文件，就是这种转换表。
+Emacs23 的编码原理是把所有的字符集都转换成 utf-8，内部字符都是 utf-8 编码。这样
+对于每个字符集都需要两张表，一个是 charset --> utf-8，另一个是 utf-8 --> charset。
+Emacs23 源码的 etc/charsets/ 目录下有很多 *.map 文件，就是这种转换表。
 
-当Emacs23打开一个文件时，先判断文件的编码，然后加载相应的表格，再
-按照表格把文件中的字符一个一个转换成 utf-8 放入内存；保存文件时，
-也是按照表格把内部的 utf-8 编码转换成相应的字符集编码。
+当 Emacs23 打开一个文件时，先判断文件的编码，然后加载相应的表格，再按照表格把文
+件中的字符一个一个转换成 utf-8 放入内存；保存文件时，也是按照表格把内部的 utf-8
+编码转换成相应的字符集编码。
 
-unicode 的全部编码可以分成很多 block，在 www.unicode.org 可以查到。
-由于中国参与 unicode 的制定比较晚，因此造成了gb2312/gbk/gb18030中
-的字符被分配到了很多不同的 block 中，汉字还相对比较连续，标点符号
-就特别分散，这个block中有几个，那个block中有几个。
+unicode 的全部编码可以分成很多 block，在 www.unicode.org 可以查到。由于中国参与
+unicode 的制定比较晚，因此造成了gb2312/gbk/gb18030中的字符被分配到了很多不同的
+block 中，汉字还相对比较连续，标点符号就特别分散，这个block中有几个，那个block中
+有几个。
 
-Emacs 23 在进行 fill 时不整齐的原因，主要是那些标点符号的宽度属性
-设置错误，本来应该是2，却设成了1，因此 fill 时计算行宽不准确，标点
-符号越多，误差越大。我的那个patch主要是更改了这些标点符号的宽度属
-性。
+Emacs 23 在进行 fill 时不整齐的原因，主要是那些标点符号的宽度属性设置错误，本来
+应该是2，却设成了1，因此 fill 时计算行宽不准确，标点符号越多，误差越大。我的那个
+patch主要是更改了这些标点符号的宽度属性。
 #+BEGIN_SRC emacs-lisp
-(let ((l '(chinese-gb2312
-            gb18030-2-byte
- gb18030-4-byte-bmp
-            gb18030-4-byte-ext-1
- gb18030-4-byte-ext-2
-            gb18030-4-byte-smp)))
-   (dolist (elt l)
-     (map-charset-chars #'modify-category-entry elt ?|)
- (map-charset-chars
-      (lambda (range ignore)
- (set-char-table-range char-width-table range 2))
- elt)))
+  (let ((l '(chinese-gb2312
+              gb18030-2-byte
+   gb18030-4-byte-bmp
+              gb18030-4-byte-ext-1
+   gb18030-4-byte-ext-2
+              gb18030-4-byte-smp)))
+     (dolist (elt l)
+       (map-charset-chars #'modify-category-entry elt ?|)
+   (map-charset-chars
+        (lambda (range ignore)
+   (set-char-table-range char-width-table range 2))
+   elt)))
 #+END_SRC
 ** Spacemacs 字体机制
 *** 默认字体设置
-    =core-fonts-support.el= 定义的函数 =spacemacs/set-default-font= 会在变量
-    =default-frame-alist= 中加入字体的设置。如果不采用 Spacemacs 的字体设置机制，
-    而希望自己另行设置，应该需要将该设置从 =default-frame-alist= 变量中移除，然
-    后添加自己的设置。
+=core-fonts-support.el= 定义的函数 =spacemacs/set-default-font= 会在变量
+=default-frame-alist= 中加入字体的设置。如果不采用 Spacemacs 的字体设置机制，而
+希望自己另行设置，应该需要将该设置从 =default-frame-alist= 变量中移除，然后添加
+自己的设置。
 #+BEGIN_SRC emacs-lisp
-(assq-delete-all 'font default-frame-alist)
-;; (set-frame-font fontspec nil t)
-(push `(font . ,(frame-parameter nil 'font)) default-frame-alist)
+  (assq-delete-all 'font default-frame-alist)
+  ;; (set-frame-font fontspec nil t)
+  (push `(font . ,(frame-parameter nil 'font)) default-frame-alist)
 #+END_SRC
 
 *** modeline 的高度（powerline）
-    spacemacs 使用 powerline 增强原生的 modeline，并引入变量 =powerline-scale=
-    并通过函数 =spacemacs/compute-powerline-height= 辅助计算 powerline 中的变量
-    =powerline-height= ，powerline 根据该变量调整 =separator-height= 的值，最后需
-    要调用 *powerline-reset* 重新绘制相关图案。
+spacemacs 使用 powerline 增强原生的 modeline，并引入变量 =powerline-scale= 并通
+过函数 =spacemacs/compute-powerline-height= 辅助计算 powerline 中的变量
+=powerline-height= ，powerline 根据该变量调整 =separator-height= 的值，最后需要
+调用 *powerline-reset* 重新绘制相关图案。
 ** CJK 的特性及处理
-   现代版本的 Emacs 已经可以正常的显示 CJK 字符了，但是 CJK 字符与 ASCII 字符之
-   间存在一些不同的特性，比如中文字体字形的尺寸与英文字体不同，导致显示时不能很
-   好地对齐等问题。通过对 Emacs 字体机制的适当调整，可以满足部分要求。
+现代版本的 Emacs 已经可以正常的显示 CJK 字符了，但是 CJK 字符与 ASCII 字符之间存
+在一些不同的特性，比如中文字体字形的尺寸与英文字体不同，导致显示时不能很好地对齐
+等问题。通过对 Emacs 字体机制的适当调整，可以满足部分要求。
 *** 中英文字符的等宽显示
-    中英文字形尺寸上的区别，导致中英文同时出现时不能做到即等宽又等高，Emacs 会默
-    认使用同样大小的中英文字体，因此中英文字体默认是等高的。这种默认设置在某些场
-    景中，如 minibuffer 或 modeline 中是完全能够接收的。但在另外的某些场景中，如
-    org-mode 的表格竖线对齐在视觉上更清爽，但 org-mode 的自动对齐功能是通过计算
-    字符的宽度来实现的，因此等宽的需求会高于等高。为实现等宽，需要对中英文字体分
-    别设置大小
+中英文字形尺寸上的区别，导致中英文同时出现时不能做到即等宽又等高，Emacs 会默认使
+用同样大小的中英文字体，因此中英文字体默认是等高的。这种默认设置在某些场景中，如
+minibuffer 或 modeline 中是完全能够接收的。但在另外的某些场景中，如 org-mode 的
+表格竖线对齐在视觉上更清爽，但 org-mode 的自动对齐功能是通过计算字符的宽度来实现
+的，因此等宽的需求会高于等高。为实现等宽，需要对中英文字体分别设置大小
