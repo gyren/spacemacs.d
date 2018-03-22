@@ -105,10 +105,11 @@ tiny | small | normal | large | huge"
    xx-font-en-favour)
 )
 
-(defun xx//set-font (&optional size profile)
+(defun xx//set-font (&optional mono-p size profile)
   "Set the fontset with the profile.
 If the profile is not given,use the first profile in `xx-font-profiles'."
-  (let* ((size (or size
+  (let* ((mono-p (or mono-p nil))
+         (size (or size
                    (and xx-set-fontsize-by-resolution (xx//set-fontsize-by-resolution))
                    xx-current-fontsize
                    xx-font-size))
@@ -145,14 +146,26 @@ If the profile is not given,use the first profile in `xx-font-profiles'."
                                         :weight 'normal
                                         :slant 'normal))
          (zh-main-fontspec (font-spec :name zh-fontname
+                                           :size en-size
+                                           :weight 'normal
+                                           :slant 'normal))
+         (zh-symbol-fontspec (font-spec :name zh-fontname
+                                             :size en-size
+                                             :weight 'normal
+                                             :slant 'normal))
+         (zh-extb-fontspec (font-spec :name extb-fontname
+                                           :size en-size
+                                           :weight 'normal
+                                           :slant 'normal))
+         (zh-main-fontspec-mono (font-spec :name zh-fontname
                                       :size zh-size
                                       :weight 'normal
                                       :slant 'normal))
-         (zh-symbol-fontspec (font-spec :name zh-fontname
+         (zh-symbol-fontspec-mono (font-spec :name zh-fontname
                                         :size zh-size
                                         :weight 'normal
                                         :slant 'normal))
-         (zh-extb-fontspec (font-spec :name extb-fontname
+         (zh-extb-fontspec-mono (font-spec :name extb-fontname
                                       :size extb-size
                                       :weight 'normal
                                       :slant 'normal)))
@@ -166,14 +179,23 @@ If the profile is not given,use the first profile in `xx-font-profiles'."
     (set-face-font 'italic en-italic-fontspec)
     (set-face-font 'bold-italic en-bold-italic-fontspec)
     ;; 设置中文字体，不能使用 `unicode' 字符集，否则将覆盖上述英文字体的设置。
-    (dolist (charset '(kana han cjk-misc bopomofo gb18030))
-      (set-fontset-font t charset zh-main-fontspec))
-    ;; 设置 CJK Unified Ideographs Extension B 字体。
-    (set-fontset-font t '(#x20000 . #x2a6df) zh-extb-fontspec nil 'prepend)
-    ;; 设置 CJK Unified Ideographs Extension C 字体。
-    (set-fontset-font t '(#x2a700 . #x2b73f) zh-extb-fontspec nil 'prepend)
-    ;; 设置 CJK Unified Ideographs Extension D 字体。
-    (set-fontset-font t '(#x2b740 . #x2b81f) zh-extb-fontspec nil 'prepend)
+    (if mono-p
+        (progn (dolist (charset '(kana han cjk-misc bopomofo gb18030))
+                 (set-fontset-font t charset zh-main-fontspec-mono))
+               ;; 设置 CJK Unified Ideographs Extension B 字体。
+               (set-fontset-font t '(#x20000 . #x2a6df) zh-extb-fontspec-mono nil 'prepend)
+               ;; 设置 CJK Unified Ideographs Extension C 字体。
+               (set-fontset-font t '(#x2a700 . #x2b73f) zh-extb-fontspec-mono nil 'prepend)
+               ;; 设置 CJK Unified Ideographs Extension D 字体。
+               (set-fontset-font t '(#x2b740 . #x2b81f) zh-extb-fontspec-mono nil 'prepend))
+      (dolist (charset '(kana han cjk-misc bopomofo gb18030))
+        (set-fontset-font t charset zh-main-fontspec))
+      ;; 设置 CJK Unified Ideographs Extension B 字体。
+      (set-fontset-font t '(#x20000 . #x2a6df) zh-extb-fontspec nil 'prepend)
+      ;; 设置 CJK Unified Ideographs Extension C 字体。
+      (set-fontset-font t '(#x2a700 . #x2b73f) zh-extb-fontspec nil 'prepend)
+      ;; 设置 CJK Unified Ideographs Extension D 字体。
+      (set-fontset-font t '(#x2b740 . #x2b81f) zh-extb-fontspec nil 'prepend))
     (xx//set-favour-font)
     ;; 设置以上字体后，调整 modeline(powerline) 的高度。
     (setq-default powerline-height (frame-char-height));(spacemacs/compute-powerline-height))
